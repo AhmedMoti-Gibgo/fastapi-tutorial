@@ -1,0 +1,49 @@
+from src.connections.database import db
+
+class UserService:
+  
+  @staticmethod
+  async def user_service_get_many_items():
+    query_string = """
+      SELECT *
+      FROM "User"
+    """
+    return await db.fetch(query_string)
+  
+  @staticmethod
+  async def user_service_get_item(id: str):
+    query_string = f"""
+      SELECT *
+      FROM "Users"
+      WHERE "id" = {id}
+      ORDER BY "User"."id"
+    """ # TODO!!: Remove dynamic values from string to avoid XSS attacks
+    return db.database_fetchrow(query_string)
+  
+  @staticmethod
+  async def user_service_create_item(item_data: dict):
+    query_string = f"""
+      INSERT INTO "User" (name, clerkId, type)
+      VALUES ({item_data.name}, {item_data.clerkId}, {item_data.type})
+      RETURNING id
+    """ # TODO!!: Remove dynamic values from string to avoid XSS attacks
+    # return await db.database_fetchrow(query_string, item_data["name"], item_data["clerkId"], item_data["type"])
+    return await db.database_execute(query_string)
+  
+  @staticmethod
+  async def user_service_update_item(item_id: str, item_data: dict):
+    query_string = f"""
+      UPDATE "User"
+      SET ({item_data.value})
+      WHERE "User"."id" = {item_id}
+    """
+    return await db.database_execute(query_string)
+  
+  @staticmethod
+  async def find_user_by_clerk_id(clerkId: str, db):
+    query_string = """
+      SELECT name, id, type
+      FROM "Users"
+      WHERE clerkId = '$1'
+    """
+    user = await db.fe

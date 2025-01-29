@@ -1,0 +1,79 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+virtualenv/
+
+# Python-specific editor settings
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# macOS-specific
+.DS_Store
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# Pytest cache
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# MyPy type checker
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Logs and debug
+*.log
+*.pot
+*.pid
+*.gz
+*.out
+
+# Alembic migrations
+alembic/versions/*.pyc
+alembic/versions/*.pyo
+
+# IDE-specific settings
+.idea/
+*.iml
+*.vscode/
+
+# Test result cache
+.tox/
+.nox/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
+
+# Build and distribution
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Other
+.env
+.env.*
+local_settings.py
