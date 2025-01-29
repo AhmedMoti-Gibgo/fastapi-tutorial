@@ -1,9 +1,10 @@
-from src.connections.database import db
+from src.connections.database import Database
+from src.modules.chatbot_domain.domain_service import DomainService
 
 class UserService:
   
   @staticmethod
-  async def user_service_get_many_items():
+  async def user_service_get_many_items(db: Database):
     query_string = """
       SELECT *
       FROM "User"
@@ -11,7 +12,7 @@ class UserService:
     return await db.fetch(query_string)
   
   @staticmethod
-  async def user_service_get_item(id: str):
+  async def user_service_get_item(id: str, db: Database):
     query_string = f"""
       SELECT *
       FROM "Users"
@@ -21,7 +22,7 @@ class UserService:
     return db.database_fetchrow(query_string)
   
   @staticmethod
-  async def user_service_create_item(item_data: dict):
+  async def user_service_create_item(item_data: dict, db: Database):
     query_string = f"""
       INSERT INTO "User" (name, clerkId, type)
       VALUES ({item_data.name}, {item_data.clerkId}, {item_data.type})
@@ -31,7 +32,7 @@ class UserService:
     return await db.database_execute(query_string)
   
   @staticmethod
-  async def user_service_update_item(item_id: str, item_data: dict):
+  async def user_service_update_item(item_id: str, item_data: dict, db: Database):
     query_string = f"""
       UPDATE "User"
       SET ({item_data.value})
@@ -40,10 +41,13 @@ class UserService:
     return await db.database_execute(query_string)
   
   @staticmethod
-  async def find_user_by_clerk_id(clerkId: str, db):
+  async def find_user_by_clerk_id(
+    clerk_id: str, db: Database
+  ):
     query_string = """
       SELECT name, id, type
-      FROM "Users"
-      WHERE clerkId = '$1'
+      FROM "User"
+      WHERE "clerkId" = '12345'
     """
-    user = await db.fe
+    user = await db.fetchrow(query_string)
+    return user

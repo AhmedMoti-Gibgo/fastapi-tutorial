@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from sqlalchemy import sql, text
 import asyncpg
 from fastapi import HTTPException
@@ -8,17 +8,16 @@ from fastapi import HTTPException
 connection_string = "postgresql+asyncpg://postgres:password123@localhost:5432/fastapi-backend"
 
 class Database:
-  def __init__(self):
-    self.pool = None
-    self.dsn = connection_string.replace("+asyncpg", "")
+  def __init__(self, db_connection_string: str):
+    self.pool: Optional[asyncpg.pool.Pool] = None
+    self.db_string = db_connection_string.replace("+asyncpg", "")
 
   async def connect(self):
-    self.pool = await asyncpg.create_pool(dsn=str(self.dsn))
+    self.pool = await asyncpg.create_pool(dsn=str(self.db_string))
 
   async def disconnect(self):
     if self.pool:
-      await self.pool.close() 
-    await self.engine.dispose()
+      await self.pool.close()
 
   async def ping(self):
     if self.pool is None:
@@ -28,6 +27,7 @@ class Database:
         result = await connection.fetchval("SELECT 1")
         if result == 1:
           return "Pool connected successfully"
+        # return "Pool connection failed"
       except Exception as error:
         return f"Pool connection failed: {error}"
       
@@ -35,9 +35,9 @@ class Database:
     async with self.pool.acquire() as connection:
       return await connection.fetch(query, *args)
     
-  async def fethrow(self, query, *args):
+  async def fetchrow(self, query, *args):
     async with self.pool.acquire() as connection:
-      return await connection.fethrow(query, *args)    
+      return await connection.fetchrow(query, *args)    
     
   async def execute(self, query, *args):
     async with self.pool.acquire() as connection:
@@ -61,5 +61,5 @@ class DatabaseWithEngine:
       except Exception as error:
         return f"Engine connection failed"
 
-db = Database()
+db = Database(connection_string)
 dbAlt = DatabaseWithEngine()

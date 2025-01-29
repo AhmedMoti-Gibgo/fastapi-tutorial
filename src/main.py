@@ -7,8 +7,10 @@ from src.connections.database import db, dbAlt
 
 @asynccontextmanager
 async def pool_lifespan(app: FastAPI):
+  # startup
   await db.connect()
   yield
+  # shutdown
   await db.disconnect()
 
 app = FastAPI(lifespan=pool_lifespan)
@@ -21,7 +23,7 @@ app.add_middleware(
 @app.get("/")
 async def root():
   return {
-    "message": "Hello world"
+    "status": "ok"
   }
 
 @app.get("/ping")

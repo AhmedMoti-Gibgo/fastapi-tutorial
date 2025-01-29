@@ -29,4 +29,7 @@ class FindUserByIdResponseSchema(BaseModel):
   name: str
   id: str
   type: str
-  
+
+class ResponseSchema(BaseModel):
+  status: int
+  data: str | dict

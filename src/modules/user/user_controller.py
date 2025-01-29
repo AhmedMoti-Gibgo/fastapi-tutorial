@@ -1,7 +1,9 @@
 from fastapi import HTTPException
 from src.modules.user.user_service import UserService
-from src.modules.user.user_schema import User, CreateUser, UpdateUser
+import src.modules.user.user_schema as UserSchema
 from fastapi import status
+from src.modules.chatbot_domain.domain_service import DomainService
+from src.connections.database import db
 
 class UserController:
   
@@ -29,8 +31,36 @@ class UserController:
       raise HTTPException(status_code=500, detail="TODO!!:")
   
   @staticmethod
-  async def user_controller_update_item(user_id: str, user_date: UpdateUser):
+  async def user_controller_update_item(user_id: str, user_date: UserSchema.UpdateUser):
     try: 
       return await UserService.user_service_update_item(user_id, user_date)
     except Exception as error:
       raise HTTPException(status_code=400, detail=str(error))
+    
+  @staticmethod
+  async def user_service_on_login(clerk_id: str):
+    try:
+      user = await UserService.find_user_by_clerk_id(clerk_id, db)
+      if not user:
+        return { # TO.DO!!: apply a model to this (e.g. AppResponse(status=400, data=""))
+          "status": 400,
+          "data": "No user found in the database"
+        }
+      domains = await DomainService.domain_service_get_all_account_domains(user["id"], db)
+      if domains:
+        return {
+          "status": 200,
+          "data": {
+            "user":  UserSchema.User.model_validate(user).model_dump(),
+            "user_domains": [dict(domainItem) for domainItem in domains]
+          }
+        }
+      return {
+        "status": 400,
+        "data": dict(UserSchema.User)
+      }
+    except Exception as error:
+      raise HTTPException(
+        status_code=500,
+        detail=str(error)
+      )
