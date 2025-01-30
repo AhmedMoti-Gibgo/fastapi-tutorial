@@ -1,35 +1,40 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
 import ujson
+from enum import Enum
 
-class UserBase(BaseModel):
-  name: str
-  clerkId: str
-  type: str
+class UserTypeEnum(str, Enum):
+  student = "student"
+  business = "business"
 
-class CreateUser(UserBase):
+class user_schema_UserBase(BaseModel):
+  name: str = Field(..., description="Full name of the user")
+  clerkId: str = Field(..., description="Unique Clerk ID of the user")
+  type: UserTypeEnum = Field(..., description="Type of user (i.e. 'student' or 'business')")
+
+class user_schema_CreateUser(user_schema_UserBase):
   pass
+  
+class user_schema_UpdateUser(user_schema_UserBase):
+  name: str | None = None
+  type: UserTypeEnum | None = None
 
-class UpdateUser(UserBase):
-  pass
-
-class User(UserBase):
+class User(user_schema_UserBase):
   id: str
   createdAt: datetime
   updatedAt: datetime
   stripeId: str | None = None
-  chatbotDomains: list[dict] | None = None
 
   class Config:
     orm_mode = True
     json_loads = ujson.loads
     json_dumps = ujson.dumps
 
-class FindUserByIdResponseSchema(BaseModel):
+class user_schema_FindUserByIdResponseSchema(BaseModel):
   name: str
   id: str
   type: str
 
-class ResponseSchema(BaseModel):
+class user_schema_ResponseSchema(BaseModel):
   status: int
   data: str | dict

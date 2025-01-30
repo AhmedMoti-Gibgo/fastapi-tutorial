@@ -1,34 +1,31 @@
 from fastapi import APIRouter, Depends
 from src.modules.user.user_controller import UserController
-from src.modules.user.user_schema import User, CreateUser, UpdateUser
 from fastapi.responses import ORJSONResponse
-import src.modules.user.user_schema as UserSchema
+from src.modules.user import user_schema
 
 router = APIRouter(default_response_class=ORJSONResponse)
 
-@router.get("/", response_model=list[User])
+# get all users
+@router.get("/")
 async def user_route_get_many_items():
   return await UserController.user_controller_get_many_items()
 
-@router.get("/{user_id}", response_model=User)
+# get single user
+@router.get("/{user_id}")
 async def user_route_get_item(user_id: str):
   return await UserController.user_controller_get_item(user_id)
 
-@router.post("/", response_model=User)
-async def user_route_create_item(user: CreateUser):
+# get single user (by Clerk ID)
+@router.get("/auth/{clerk_id}")
+async def user_route_auth_login(clerk_id: str):
+  return await UserController.user_controller_get_item_clerk_id(clerk_id)
+
+# create user
+@router.post("/")
+async def user_route_create_item(user: user_schema.user_schema_CreateUser):
   return await UserController.user_controller_create_item(user)
 
-@router.put("/{user_id}", response_model=User)
-async def user_route_update_item(user_id: str, user: UpdateUser):
+# update user
+@router.put("/{user_id}")
+async def user_route_update_item(user_id: str, user: user_schema.user_schema_UpdateUser):
   return await UserController.user_controller_update_item(user_id, user)
-
-async def clerk_get_current_user():
-  # replace this with the actual Clerk authentication logic
-  # this is a mock implementation
-  return {
-    "clerk_id": "12345"
-  }
-
-@router.post("/auth/login", response_model=UserSchema.ResponseSchema)
-async def user_route_auth_login(current_user: dict = Depends(clerk_get_current_user)):
-  return await UserController.user_service_on_login(current_user["clerk_id"])

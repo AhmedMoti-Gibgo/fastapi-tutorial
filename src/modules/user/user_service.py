@@ -1,5 +1,5 @@
 from src.connections.database import Database
-from src.modules.chatbot_domain.domain_service import DomainService
+# from src.modules.chatbot_domain.domain_service import DomainService
 
 class UserService:
   
@@ -12,24 +12,32 @@ class UserService:
     return await db.fetch(query_string)
   
   @staticmethod
-  async def user_service_get_item(id: str, db: Database):
-    query_string = f"""
-      SELECT *
-      FROM "Users"
-      WHERE "id" = {id}
-      ORDER BY "User"."id"
+  async def user_service_get_item(user_id: str, db: Database):
+    query_string = """
+      SELECT "clerkId"
+      FROM "User"
+      WHERE "id" = $1
     """ # TODO!!: Remove dynamic values from string to avoid XSS attacks
-    return db.database_fetchrow(query_string)
+    return await db.fetchrow(query_string, user_id)
+  
+  @staticmethod
+  async def user_controller_user_clerk_id(clerk_id: str, db: Database):
+    query_string = """
+      SELECT id
+      FROM "User"
+      WHERE "clerkId" = $1
+    """
+    return await db.fetchrow(query_string, clerk_id)
   
   @staticmethod
   async def user_service_create_item(item_data: dict, db: Database):
-    query_string = f"""
-      INSERT INTO "User" (name, clerkId, type)
-      VALUES ({item_data.name}, {item_data.clerkId}, {item_data.type})
+    query_string = """
+      INSERT INTO "User" (name, "clerkId", type)
+      VALUES ($1, $2, $3)
       RETURNING id
     """ # TODO!!: Remove dynamic values from string to avoid XSS attacks
     # return await db.database_fetchrow(query_string, item_data["name"], item_data["clerkId"], item_data["type"])
-    return await db.database_execute(query_string)
+    return await db.execute(query_string, item_data["name"], item_data["clerkId"], item_data["type"])
   
   @staticmethod
   async def user_service_update_item(item_id: str, item_data: dict, db: Database):
@@ -47,7 +55,7 @@ class UserService:
     query_string = """
       SELECT name, id, type
       FROM "User"
-      WHERE "clerkId" = '12345'
+      WHERE "clerkId" = $1
     """
-    user = await db.fetchrow(query_string)
+    user = await db.fetchrow(query_string, clerk_id)
     return user

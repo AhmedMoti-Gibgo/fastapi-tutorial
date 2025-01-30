@@ -1,6 +1,6 @@
 from src.connections.database import Database
 
-class DomainService:
+class ChatbotDomainService:
   @staticmethod
   async def domain_service_get_all_account_domains(
     user_id: str,
@@ -9,7 +9,7 @@ class DomainService:
     query_string = """
       SELECT id, nickname, "userId"
       FROM "ChatbotDomain"
-      WHERE "userId" = 'c94f1ad8-3bd4-4f6a-a1ad-0ad0264d3283'
+      WHERE "userId" = $1
     """
-    user_domains = await db.fetch(query_string)
+    user_domains = await db.fetch(query_string, user_id)
     return user_domains

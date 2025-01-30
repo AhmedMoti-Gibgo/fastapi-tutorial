@@ -4,6 +4,7 @@ from src.modules.user import user_route
 from src.connections.database import db
 from contextlib import asynccontextmanager
 from src.connections.database import db, dbAlt
+from src.modules.chatbot_domain import domain_route
 
 @asynccontextmanager
 async def pool_lifespan(app: FastAPI):
@@ -34,3 +35,4 @@ async def ping():
   }
 
 app.include_router(user_route.router, prefix="/api/v1/user", tags=["user"])
+app.include_router(domain_route.router, prefix="/api/v1/domain", tags=["domain"])
