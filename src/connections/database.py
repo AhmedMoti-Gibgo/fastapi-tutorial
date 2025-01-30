@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from typing import AsyncGenerator, Optional
 from sqlalchemy import sql, text
 import asyncpg
-from fastapi import HTTPException
+from fastapi import HTTPException, Request, Depends
 
 connection_string = "postgresql+asyncpg://postgres:password123@localhost:5432/fastapi-backend"
 
@@ -13,7 +13,7 @@ class Database:
     self.db_string = db_connection_string.replace("+asyncpg", "")
 
   async def connect(self):
-    self.pool = await asyncpg.create_pool(dsn=str(self.db_string))
+    self.pool = await asyncpg.create_pool(dsn=str(self.db_string), min_size=5, max_size=20, command_timeout=30)
 
   async def disconnect(self):
     if self.pool:
@@ -21,13 +21,13 @@ class Database:
 
   async def ping(self):
     if self.pool is None:
-      return "Pool not initialized"
+      raise HTTPException(status_code=500, detail="Database not conncted")
     async with self.pool.acquire() as connection:
       try:
         result = await connection.fetchval("SELECT 1")
         if result == 1:
           return "Pool connected successfully"
-        # return "Pool connection failed"
+        return "Pool connection failed"
       except Exception as error:
         return f"Pool connection failed: {error}"
       
@@ -38,6 +38,10 @@ class Database:
   async def fetchrow(self, query, *args):
     async with self.pool.acquire() as connection:
       return await connection.fetchrow(query, *args)    
+    
+  async def fetchval(self, query, *args):
+    async with self.pool.acquire() as connection:
+      return await connection.fetchval(query, *args)
     
   async def execute(self, query, *args):
     async with self.pool.acquire() as connection:
@@ -63,3 +67,6 @@ class DatabaseWithEngine:
 
 db = Database(connection_string)
 dbAlt = DatabaseWithEngine()
+
+async def get_db(req: Request) -> Database:
+  return req.app.state.db

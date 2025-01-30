@@ -1,31 +1,25 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Path
 from src.modules.user.user_controller import UserController
-from fastapi.responses import ORJSONResponse
 from src.modules.user import user_schema
+from fastapi.responses import UJSONResponse
 
-router = APIRouter(default_response_class=ORJSONResponse)
-
-# get all users
-@router.get("/")
-async def user_route_get_many_items():
-  return await UserController.user_controller_get_many_items()
-
-# get single user
-@router.get("/{user_id}")
-async def user_route_get_item(user_id: str):
-  return await UserController.user_controller_get_item(user_id)
+router = APIRouter(
+    prefix="/api/v1/user",
+    tags=["chatroom"],
+    default_response_class=UJSONResponse
+)
 
 # get single user (by Clerk ID)
 @router.get("/auth/{clerk_id}")
 async def user_route_auth_login(clerk_id: str):
-  return await UserController.user_controller_get_item_clerk_id(clerk_id)
+  return {
+    "message": "wire this up please"
+  }
 
-# create user
-@router.post("/")
-async def user_route_create_item(user: user_schema.user_schema_CreateUser):
-  return await UserController.user_controller_create_item(user)
-
-# update user
-@router.put("/{user_id}")
-async def user_route_update_item(user_id: str, user: user_schema.user_schema_UpdateUser):
-  return await UserController.user_controller_update_item(user_id, user)
+# create registered user (registered with Clerk)
+@router.post("/create", response_model=user_schema.CreateRegisteredUser_ResponseSchema)
+async def user_route_create_registered_user(
+  create_data: user_schema.CreateRegisteredUser_RequestSchema,
+  controller: UserController = Depends()
+):
+  return await controller.user_controller_create_registered_user(create_data)

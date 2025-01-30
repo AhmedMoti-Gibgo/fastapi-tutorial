@@ -1,61 +1,28 @@
+from asyncpg import exceptions
 from src.connections.database import Database
-# from src.modules.chatbot_domain.domain_service import DomainService
+from src.modules.user import user_model, user_schema
+from fastapi import HTTPException
 
 class UserService:
-  
-  @staticmethod
-  async def user_service_get_many_items(db: Database):
-    query_string = """
-      SELECT *
-      FROM "User"
-    """
-    return await db.fetch(query_string)
-  
-  @staticmethod
-  async def user_service_get_item(user_id: str, db: Database):
-    query_string = """
-      SELECT "clerkId"
-      FROM "User"
-      WHERE "id" = $1
-    """ # TODO!!: Remove dynamic values from string to avoid XSS attacks
-    return await db.fetchrow(query_string, user_id)
-  
-  @staticmethod
-  async def user_controller_user_clerk_id(clerk_id: str, db: Database):
-    query_string = """
-      SELECT id
-      FROM "User"
-      WHERE "clerkId" = $1
-    """
-    return await db.fetchrow(query_string, clerk_id)
-  
-  @staticmethod
-  async def user_service_create_item(item_data: dict, db: Database):
-    query_string = """
-      INSERT INTO "User" (name, "clerkId", type)
-      VALUES ($1, $2, $3)
-      RETURNING id
-    """ # TODO!!: Remove dynamic values from string to avoid XSS attacks
-    # return await db.database_fetchrow(query_string, item_data["name"], item_data["clerkId"], item_data["type"])
-    return await db.execute(query_string, item_data["name"], item_data["clerkId"], item_data["type"])
-  
-  @staticmethod
-  async def user_service_update_item(item_id: str, item_data: dict, db: Database):
-    query_string = f"""
-      UPDATE "User"
-      SET ({item_data.value})
-      WHERE "User"."id" = {item_id}
-    """
-    return await db.database_execute(query_string)
-  
-  @staticmethod
-  async def find_user_by_clerk_id(
-    clerk_id: str, db: Database
+  def __init__(self, db: Database):
+    self.db = db
+
+  async def user_service_create_registered_user(
+    self, 
+    name: str,
+    clerkId: str,
+    type: str
   ):
     query_string = """
-      SELECT name, id, type
-      FROM "User"
-      WHERE "clerkId" = $1
+      INSERT INTO "User"
+      (name, "clerkId", type)
+      VALUES ($1, $2, $3)
+      RETURNING id, name, type
     """
-    user = await db.fetchrow(query_string, clerk_id)
-    return user
+    try:
+      result = await self.db.fetchrow(query_string, name, clerkId, type)
+      if not result:
+        raise HTTPException(status_code=404, detail="Failed to insert")
+      return user_model.CreateRegisteredUser_DBModel.from_db(result)
+    except exceptions.UniqueViolationError:
+      raise HTTPException(status_code=400, detail="400 is probably incorrect")
