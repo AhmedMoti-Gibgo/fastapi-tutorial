@@ -65,6 +65,7 @@ class DatabaseWithEngine:
       except Exception as error:
         return f"Engine connection failed"
 
+# I think these are ONLY used to ping?? TO.DO!!: Remove them
 db = Database(connection_string)
 dbAlt = DatabaseWithEngine()
 

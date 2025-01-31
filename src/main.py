@@ -7,6 +7,7 @@ from src.connections.database import db, dbAlt
 from src.modules.chatbot_domain import domain_route
 from src.modules.chatroom import chatroom_route
 from src.modules.subscription import subscription_route
+from src.modules.chatbot_domain import domain_route
 
 @asynccontextmanager
 async def pool_lifespan(app: FastAPI):
@@ -41,3 +42,4 @@ app.include_router(user_route.router)
 app.include_router(domain_route.router, prefix="/api/v1/domain", tags=["domain"])
 app.include_router(chatroom_route.router) # prefix and tags initialized in router
 app.include_router(subscription_route.router)
+app.include_router(domain_route.router)

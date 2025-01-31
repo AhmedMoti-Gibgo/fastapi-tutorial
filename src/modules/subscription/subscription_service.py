@@ -10,7 +10,7 @@ class SubscriptionService:
     
   async def subscription_service_find_user_plan(
       self,
-      user_id: str
+      clerk_id: str
   ):
     user_query_string = """
       SELECT *
@@ -23,7 +23,7 @@ class SubscriptionService:
       WHERE "userId" = $1
     """
     try:
-      user = await self.db.fetchrow(user_query_string, user_id)
+      user = await self.db.fetchrow(user_query_string, clerk_id)
       if not user:
         raise HTTPException(status_code=404, detail="User not found")
       user = User_DBModel.from_db(user)
